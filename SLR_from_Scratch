@@ -1,0 +1,22 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# create pseudo data
+x = np.arange(0,500) 
+# pseudo-random data with 499 samples, slope of 5, and intercept of 20
+y = (5*np.arange(0,500))+20+((np.random.rand(500)-0.5)*100)
+
+# simple linear regression function
+def slr(x_data, y_data):
+	# applies formula to find the two parameters in model: y=ax+b
+	a = (np.sum(x_data*y_data)-(x_data.size*np.mean(x_data)*np.mean(y_data)))/(np.sum(np.square(x_data))-(x_data.size*np.mean(x_data)*np.mean(x_data)))
+	b = np.mean(y_data) - (a*np.mean(x_data))
+	# prints coefficients
+	print("a=" , a)
+	print('b=' , b)
+	return (a*x_data) + b
+
+# plot regression line along with data
+plt.plot(x,y,'x')
+plt.plot(x,slr(x,y),'--')
+plt.show()
