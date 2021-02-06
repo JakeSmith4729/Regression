@@ -68,7 +68,7 @@ def regress(x_data,y_data,p,alpha,prec):
 	ax1.plot(pseudo_x,pseudo_y,'o',color=(0,0,0,0.5),label='pseudo data')
 	i = 0
 	# plot every 20th hypothesis function with varying color indicating goodness of fit 
-	for i in range(0,epoch,10):
+	for i in range(0,epoch,5):
 		ax1.plot(pseudo_x,np.matmul(theta[i,:],x), '--',color = (20**(-float(i)/epoch),1-20**(-float(i)/epoch),0))
 		i+=1
 
@@ -86,15 +86,15 @@ def regress(x_data,y_data,p,alpha,prec):
 
 # # linear regression
 pseudo_x = np.linspace(0,10, N) 
-pseudo_y = 100-(5*pseudo_x)+((np.random.randn(N)-0.5)*10)
-regress(pseudo_x, pseudo_y, 2,0.01,0.0001)
+pseudo_y = 100-(5*pseudo_x)+((np.random.randn(N)-0.5)*5)
+regress(pseudo_x, pseudo_y, 2,0.01,0.00001)
 
 # polynomial regression (2nd degree)
-pseudo_x = np.linspace(-4,2, N) 
-pseudo_y = 10+(3*pseudo_x)+(7*pseudo_x**2)+((np.random.randn(N)-0.5)*10)
-regress(pseudo_x, pseudo_y, 3,0.01,0.0001)
+pseudo_x = np.linspace(-5,3, N) 
+pseudo_y = 100+(3*pseudo_x)+(7*pseudo_x**2)+((np.random.randn(N)-0.5)*5)
+regress(pseudo_x, pseudo_y, 3,0.01,0.001)
 
 # polynomial regression (4th degree)
 pseudo_x = np.linspace(-2,2, N) 
-pseudo_y = 5-(7*pseudo_x)+(2*pseudo_x**2)+(3*pseudo_x**3)-(pseudo_x**4)+((np.random.randn(N)-0.5)*10)
+pseudo_y = 5+(7*pseudo_x)+(4*pseudo_x**2)+(5*pseudo_x**3)-(3*pseudo_x**4)+((np.random.randn(N)-0.5)*5)
 regress(pseudo_x, pseudo_y, 5,0.01,0.0001)
