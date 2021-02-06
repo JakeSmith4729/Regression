@@ -2,21 +2,99 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # create pseudo data
-x = np.arange(0,500) 
-# pseudo-random data with 499 samples, slope of 5, and intercept of 20
-y = (5*np.arange(0,500))+20+((np.random.rand(500)-0.5)*100)
+N = 1000
+# regresion analysis given data, number of paramters(p), learning rate(alpha), and precision(prec)
+def regress(x_data,y_data,p,alpha,prec):
 
-# simple linear regression function
-def slr(x_data, y_data):
-	# applies formula to find the two parameters in model: y=ax+b
-	a = (np.sum(x_data*y_data)-(x_data.size*np.mean(x_data)*np.mean(y_data)))/(np.sum(np.square(x_data))-(x_data.size*np.mean(x_data)*np.mean(x_data)))
-	b = np.mean(y_data) - (a*np.mean(x_data))
-	# prints coefficients
-	print("a=" , a)
-	print('b=' , b)
-	return (a*x_data) + b
+	n = x_data.size		# number of data points
+	# create x array
+	# |x_1^0 x_2^0 .... |
+	# |x_1^1 x_2^1 .... |
+	# |..... ..... x_n^p|
+	x = np.ones(n)
+	for i in range(1,p):
+		x = np.vstack((x,x_data ** i))
 
-# plot regression line along with data
-plt.plot(x,y,'x')
-plt.plot(x,slr(x,y),'--')
-plt.show()
+	# initialize theta array with ones
+	# |theta_0 theta_1 .. theta_p| = |1 1 .. 1|
+	theta = np.array([np.ones(p)])
+	# alternatively initialize using estimated coefficients
+	# theta = np.array([np.matmul(np.matmul(np.linalg.inv(np.matmul(x,x.T)).T, x), y_data.T)])	# build paramter array
+
+	# cost function 
+	def cost(theta_cur):
+		return (1.0/n) * np.sum((y_data - np.matmul(theta_cur,x))**2)
+	# gradient function
+	def grad(theta_cur):
+		grad = np.array([])
+		for i in range(p):
+			grad = np.append(grad, -(2.0/n) * np.sum(x[i,:]*(y_data - np.matmul(theta_cur,x))))
+		return grad
+ 
+	cost_data = np.array([cost(theta)])			# stores cost at each epoch
+	max_step = abs(np.amax(grad(theta[0,:])))	# largest descent step of any paramter
+	# perform gradient descent, stopping when precision is reached
+	i = 0
+	while max_step > prec:
+		max_step = abs(np.amax(grad(theta[i,:]))) 						# update max step for epoch
+		cost_data = np.append(cost_data,cost(theta[i,:]))				# store cost of epoch
+		theta = np.vstack((theta,theta[i,:]-alpha * grad(theta[i,:])))	# new row for current paramters
+		i+=1
+		# stop gradient descent if it lasts more than 5000 epochs
+		if(i>10000):	 
+			break
+
+	theta = np.around(theta,decimals=2)	# round the paramters to nearest 2 decimals
+	epoch = i # total epochs
+
+	# create function label
+	f_label = [''] * p
+	i = 0
+	for i in range(p):
+		f_label[i] = str(theta[-1,i])
+		if (i>=1):
+			f_label[i] += "x"
+		if (i >= 2):
+			f_label[i] += "^" +str(i) 
+		i+=1
+	f_label = '+'.join(f_label)
+	f_label = f_label.replace('+-', '-')
+
+	# create subplots
+	fig = plt.figure(figsize=(12, 10))
+	ax1 = fig.add_subplot(211)
+	ax2 = fig.add_subplot(212)
+	# plot pseudo-data points
+	ax1.plot(pseudo_x,pseudo_y,'o',color=(0,0,0,0.5),label='pseudo data')
+	i = 0
+	# plot every 20th hypothesis function with varying color indicating goodness of fit 
+	for i in range(0,epoch,10):
+		ax1.plot(pseudo_x,np.matmul(theta[i,:],x), '--',color = (20**(-float(i)/epoch),1-20**(-float(i)/epoch),0))
+		i+=1
+
+	# plot final hypothesis function in green
+	ax1.plot(pseudo_x, np.matmul(theta[-1,:],x),'g',label='h(x)=' + f_label )
+	ax1.legend(loc='upper right',prop={'size':12})
+	ax1.set_title('Regression')
+
+	# plot cost as a function of epoch
+	ax2.plot(np.arange(0,epoch+1),cost_data,'k-')
+	ax2.set_xlabel('Epochs: ' + str(epoch) )
+	ax2.set_ylabel(r'J($\theta_{epoch} )$')
+	ax2.set_title('Cost Function')
+	plt.show()
+
+# # linear regression
+pseudo_x = np.linspace(0,10, N) 
+pseudo_y = 100-(5*pseudo_x)+((np.random.randn(N)-0.5)*10)
+regress(pseudo_x, pseudo_y, 2,0.01,0.0001)
+
+# polynomial regression (2nd degree)
+pseudo_x = np.linspace(-4,2, N) 
+pseudo_y = 10+(3*pseudo_x)+(7*pseudo_x**2)+((np.random.randn(N)-0.5)*10)
+regress(pseudo_x, pseudo_y, 3,0.01,0.0001)
+
+# polynomial regression (4th degree)
+pseudo_x = np.linspace(-2,2, N) 
+pseudo_y = 5-(7*pseudo_x)+(2*pseudo_x**2)+(3*pseudo_x**3)-(pseudo_x**4)+((np.random.randn(N)-0.5)*10)
+regress(pseudo_x, pseudo_y, 5,0.01,0.0001)
